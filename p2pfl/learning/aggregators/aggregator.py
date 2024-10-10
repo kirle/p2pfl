@@ -23,6 +23,7 @@ import threading
 from typing import List
 
 from p2pfl.learning.p2pfl_model import P2PFLModel
+from p2pfl.learning.callbacks.requirements import CallbackRequirement
 from p2pfl.management.logger import logger
 from p2pfl.settings import Settings
 
@@ -54,6 +55,10 @@ class Aggregator:
         # Locks
         self.__agg_lock = threading.Lock()
         self._finish_aggregation_lock = threading.Lock()
+        
+    @property
+    def required_callbacks(self) -> List[CallbackRequirement]:
+        return []
 
     def aggregate(self, models: List[P2PFLModel]) -> P2PFLModel:
         """
