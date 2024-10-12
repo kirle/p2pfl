@@ -78,6 +78,7 @@ class P2PFLModel:
         """
         if params is None:
             params = self.get_parameters()
+            
         return pickle.dumps(params)  # serializing the entire NumPy array
 
     def decode_parameters(self, data: bytes) -> List[np.ndarray]:

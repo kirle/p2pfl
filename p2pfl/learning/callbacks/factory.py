@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple, Type
+from typing import Dict, List, Tuple, Type, Any
 
 import logging
 from p2pfl.learning.aggregators.aggregator import Aggregator
@@ -8,13 +8,13 @@ from p2pfl.learning.callbacks.requirements import CallbackRequirement
 
 class CallbackFactory:
     
-    _registry: Dict[Tuple[CallbackRequirement, str], Type[Callback]] = {} # mapping (requirement, framework) -> callback
+    _registry: Dict[Tuple[CallbackRequirement, str], Type[Any]] = {} # mapping (requirement, framework) -> callback
 
     
     @classmethod
     def register_callback(cls, requirement:CallbackRequirement):
         
-        def decorator(callback_cls:Type[Callback]):
+        def decorator(callback_cls:Type[Any]):
             framework = callback_cls.__module__.lower()
             key = (requirement, framework)    
             
@@ -31,7 +31,7 @@ class CallbackFactory:
         return decorator
     
     @classmethod
-    def create_callbacks (cls, learner:NodeLearner, aggr: Aggregator) -> List[Callback]:
+    def create_callbacks (cls, learner:NodeLearner, aggr: Aggregator) -> List[Any]:
         framework = learner.__class__.__module__.lower()
         required_callbacks = aggr.required_callbacks
         callbacks = []

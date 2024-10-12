@@ -20,6 +20,7 @@
 
 from typing import Dict, List, Union
 
+
 import numpy as np
 
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
@@ -37,7 +38,7 @@ class NodeLearner:
 
     """
 
-    def __init__(self, model: P2PFLModel, data: P2PFLDataset, self_addr: str) -> None:
+    def __init__(self, model: P2PFLModel, data: P2PFLDataset, self_addr: str, callbacks: List) -> None:
         """Initialize the learner."""
         raise NotImplementedError
 

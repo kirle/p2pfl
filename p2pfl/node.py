@@ -39,6 +39,7 @@ from p2pfl.communication.protocols.grpc.grpc_communication_protocol import (
 )
 from p2pfl.exceptions import LearnerRunningException, NodeRunningException, ZeroRoundsException
 from p2pfl.learning.aggregators.aggregator import Aggregator
+from p2pfl.learning.callbacks.factory import CallbackFactory
 from p2pfl.learning.aggregators.fedavg import FedAvg
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
 from p2pfl.learning.learner import NodeLearner
@@ -100,8 +101,11 @@ class Node:
         self._communication_protocol = protocol(address)
         self.addr = self._communication_protocol.get_address()
 
+        # Callback factory
+        callbacks = CallbackFactory.create_callbacks(learner=learner, aggr=aggregator)
+        
         # Learning
-        self.learner = learner(model, data, self.addr)
+        self.learner = learner(model, data, self.addr, callbacks=callbacks)
         self.aggregator = aggregator(node_name=self.addr)
 
         # State

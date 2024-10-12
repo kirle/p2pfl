@@ -25,6 +25,7 @@ import lightning as L
 import numpy as np
 import torch
 from lightning import Trainer
+from lightning.pytorch.callbacks import Callback
 from torch.utils.data import DataLoader
 
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
@@ -53,6 +54,8 @@ class LightningLearner(NodeLearner):
         model: P2PFLModel,
         data: P2PFLDataset,
         self_addr: str = "unknown-node",
+        callbacks: List[Callback] = [],
+        
     ) -> None:
         """Initialize the learner."""
         self.model = model
@@ -60,6 +63,7 @@ class LightningLearner(NodeLearner):
         self.__trainer: Optional[Trainer] = None
         self.epochs = 1
         self.__self_addr = self_addr
+        self.callbacks = callbacks
 
         # Start logging
         self.logger = FederatedLogger(self_addr)
@@ -140,6 +144,7 @@ class LightningLearner(NodeLearner):
                     logger=self.logger,
                     enable_checkpointing=False,
                     enable_model_summary=False,
+                    callbacks=self.callbacks,
                 )
                 pt_model, pt_data = self.__get_pt_model_data()
                 self.__trainer.fit(pt_model, pt_data)
@@ -147,6 +152,7 @@ class LightningLearner(NodeLearner):
             # Set model contribution
             self.model.set_contribution([self.__self_addr], self.data.get_num_samples())
 
+     
         except Exception as e:
             logger.error(
                 self.__self_addr,

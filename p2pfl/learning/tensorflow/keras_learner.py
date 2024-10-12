@@ -21,6 +21,7 @@
 from typing import Dict, List, Tuple, Union
 
 import numpy as np
+from keras import callbacks
 import tensorflow as tf
 
 from p2pfl.learning.dataset.p2pfl_dataset import P2PFLDataset
@@ -43,12 +44,13 @@ class KerasLearner(NodeLearner):
 
     """
 
-    def __init__(self, model: KerasModel, data: P2PFLDataset, self_addr: str = "unknown-node") -> None:
+    def __init__(self, model: KerasModel, data: P2PFLDataset, self_addr: str = "unknown-node", callbacks: List[callbacks.Callback] = []) -> None:
         """Initialize the KerasLearner."""
         self.model = model
         self.data = data
         self.__self_addr = self_addr
         self.epochs = 1  # Default epochs
+        self.callbacks = callbacks
 
         # Compile the model (you might need to customize this)
         self.model.model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
@@ -66,7 +68,7 @@ class KerasLearner(NodeLearner):
         elif isinstance(model, (list, bytes)):
             self.model.set_parameters(model)
 
-    def get_model(self) -> KerasModel:
+    def get_model(self) -> P2PFLModel:
         """
         Get the model of the learner.
 
@@ -125,7 +127,7 @@ class KerasLearner(NodeLearner):
                 model.fit(
                     data,
                     epochs=self.epochs,
-                    callbacks=[FederatedLogger(self.__self_addr)],
+                    callbacks=self.callbacks.append([FederatedLogger(self.__self_addr)]),
                 )
             # Set model contribution
             self.model.set_contribution([self.__self_addr], self.data.get_num_samples(train=True))
