@@ -58,6 +58,16 @@ class Aggregator:
         
     @property
     def required_callbacks(self) -> List[CallbackRequirement]:
+        """ 
+        Returns a list of required callbacks for the aggregator. 
+        Avaliable callbacks are defined in the callbacks module.
+        
+        Args:
+            None
+            
+        Returns:
+            List of CallbackRequirement.
+        """
         return []
 
     def aggregate(self, models: List[P2PFLModel]) -> P2PFLModel:
