@@ -6,6 +6,7 @@ from p2pfl.learning.aggregators.scaffold  import Scaffold
 from p2pfl.learning.callbacks.factory import CallbackFactory
 from p2pfl.learning.callbacks.requirements import CallbackRequirement
 from p2pfl.learning.p2pfl_model import P2PFLModel
+import numpy as np
 
 @CallbackFactory.register_callback(requirement=CallbackRequirement.SCAFFOLD)
 class SCAFFOLDCallback(L.pytorch.callbacks.Callback):
@@ -26,6 +27,8 @@ class SCAFFOLDCallback(L.pytorch.callbacks.Callback):
             
         self.initial_model_weights = copy.deepcopy(pl_module.model.get_parameters())
         
+        self.K = 0 # reset local steps
+        
     
     def on_before_optimizer_step(self, pl_module: P2PFLModel):
         # save current learning rate because it can be changed by the optimizer
@@ -45,6 +48,9 @@ class SCAFFOLDCallback(L.pytorch.callbacks.Callback):
         self.K += 1
         
     def on_train_end(self, pl_module: P2PFLModel):
+        if self.K == 0:
+            raise ValueError("Local steps K must be greater than 0.")
+        
         y_i = pl_module.model.get_parameters()
         x_g = self.initial_model_weights
         
@@ -64,13 +70,16 @@ class SCAFFOLDCallback(L.pytorch.callbacks.Callback):
         
         pl_module.model.additional_info['delta_y_i'] = delta_y_i
         pl_module.model.additional_info['delta_c_i'] = delta_c_i
+        pl_module.model.additional_info['K'] = self.K
     
     def _get_global_c(self, pl_module: P2PFLModel):
         # get c from aggregator
         self.c = [
             torch.from_numpy(c_np).to(pl_module.device) 
-            for c_np in self.aggregator.global_control_variate
+            for c_np in self._numpy_to_tensor(self.aggregator.get_global_control_variate(), pl_module.device)
         ]
         self.global_control_variate_updated = True
     
-        
+    # TODO move to utils or base class
+    def _numpy_to_tensor(self, numpy_array: np.ndarray, device: torch.device) -> torch.Tensor:
+        return torch.from_numpy(numpy_array).to(device)
